@@ -1,6 +1,6 @@
 const fs = require("fs");
-const http = require('http');
-const url = require('url');
+const http = require("http");
+const url = require("url");
 
 ////////////////////////////////////////
 // FILES
@@ -31,22 +31,35 @@ const url = require('url');
 ////////////////////////////////////////
 // SERVER
 
-// bikin dulu server
+// read file, only read file once and only at the beginning when the program started, so it using synchronous version.
+// Top-level code.
+// fs.readFile('./dev-data/data.json'); // another way to specify path name
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
+// convert from json to javascript
+const dataObject = JSON.parse(data);
+
+// create server
 const server = http.createServer((req, res) => {
   const pathName = req.url;
 
-  if (pathName === '/' || pathName === '/overview') {
-    res.end('This is OVERVIEW');
-  } else if (pathName === '/product') {
-    res.end('This is PRODUCT');
+  // create routing
+  if (pathName === "/" || pathName === "/overview") {
+    res.end("This is OVERVIEW");
+  } else if (pathName === "/product") {
+    res.end("This is PRODUCT");
+  } else if (pathName === "/api") {
+    res.writeHead(200, { 'Content-type': 'application/json' });
+    res.end(data); // has access to the top-level code
   } else {
-    res.writeHead(404, 'ERROR NOT FOUND');
-    res.end('Page not found');
+    res.writeHead(404, {
+      "Content-type": "text/html",
+      "my-own-header": "hello-world",
+    });
+    res.end("Page not found");
   }
 });
 
-// listen ke request
-server.listen(8000, 'localhost', () => {
-  console.log('server jalan di: 8000');
+// listen to request
+server.listen(8000, "localhost", () => {
+  console.log("server jalan di: 8000");
 });
-
