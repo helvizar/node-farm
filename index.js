@@ -46,7 +46,7 @@ const replaceTemplate = (temp, product) => {
   if (!product.organic) {
     output = output.replace(/{%NOT_ORGANIC%}/g, 'not-organic');
   }
-
+// console.log(output);
   return output;
 }
 
@@ -61,21 +61,32 @@ const dataObject = JSON.parse(data);
 
 // create server
 const server = http.createServer((req, res) => {
-  const pathName = req.url;
-
+  
+  const { query, pathname } = url.parse(req.url, true);
+  
   // create routing
-  if (pathName === "/" || pathName === "/overview") {
+  
+  // Overview Page
+  if (pathname === "/" || pathname === "/overview") {
     res.writeHead(200, { 'Content-type': 'text/html' });
-
     const cardsHtml = dataObject.map(element => replaceTemplate(tempCard, element)).join('');
     const output = tempOverview.replace('{%PRODUCT_CARDS%}', cardsHtml);
+    res.end(output);
+
+    // Product page
+  } else if (pathname === "/product") {
+    res.writeHead(200, { 'Content-type': 'text/html' });
+    const product = dataObject[query.id]; 
+    const output = replaceTemplate(tempProduct, product);
 
     res.end(output);
-  } else if (pathName === "/product") {
-    res.end("This is PRODUCT");
-  } else if (pathName === "/api") {
+
+    // API
+  } else if (pathname === "/api") {
     res.writeHead(200, { 'Content-type': 'application/json' });
-    res.end(data); // has access to the top-level code
+    res.end('data'); // has access to the top-level code
+
+    // Not Found
   } else {
     res.writeHead(404, {
       "Content-type": "text/html",
